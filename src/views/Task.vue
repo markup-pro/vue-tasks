@@ -45,7 +45,3 @@ export default {
   components: { AppStatus }
 }
 </script>
-
-<style scoped>
-
-</style>

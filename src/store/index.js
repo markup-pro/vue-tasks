@@ -55,12 +55,12 @@ export default createStore({
       const task = context.state.tasks.find(el => el.id === payload.taskId)
       task.status = payload.status
       try {
-        const response = await fetch(`${process.env.VUE_APP_URL_FIREBASE}tasks.json/${payload.taskId}`, {
+        const response = await fetch(`${process.env.VUE_APP_URL_FIREBASE}tasks/${payload.taskId}.json`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application-json'
           },
-          body: JSON.stringify({ status: payload.status })
+          body: JSON.stringify(task)
         })
         console.log(response.json())
       } catch (err) {
@@ -69,6 +69,9 @@ export default createStore({
     }
   },
   getters: {
+    getFilterTasks: (state) => (status) => {
+      return status ? state.tasks.filter((el) => el.status === status) : state.tasks
+    },
     getTaskData: (state) => (id) => state.tasks.find(el => el.id === id),
     checkTaskId: (state) => (id) => state.tasks.map(el => el.id).includes(id),
     getCountActiveTasks (state) {

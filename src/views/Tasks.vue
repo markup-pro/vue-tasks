@@ -1,15 +1,18 @@
 <template>
-  <h1 class="text-white center" v-if="tasks.length === 0">Задач пока нет</h1>
+  <h1 class="text-white center" v-if="$store.state.tasks.length === 0">Задач пока нет</h1>
   <div class="tasks-list" v-else>
     <h3 class="text-white">Всего активных задач: {{ countActiveTask }}</h3>
     <div class="card">
       <div class="btn-holder">
-        <div class="btn primary">Все</div>
-        <div class="btn">Активные</div>
-        <div class="btn">Выполняються</div>
-        <div class="btn">Отмененные</div>
-        <div class="btn">Завершенные</div></div>
+        <button
+          :class="['btn', { 'primary': activeStatusIndex === idx }]"
+          v-for="(btn, idx) in statusList"
+          :key="btn.title"
+          @click="filterTasks(idx)">
+          {{ btn.title }}
+        </button>
       </div>
+    </div>
     <card-task
       v-for="task in tasks"
       :key="task.id"
@@ -19,7 +22,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useStore } from 'vuex'
 
 import CardTask from '@/components/CardTask'
@@ -27,14 +30,46 @@ import CardTask from '@/components/CardTask'
 export default {
   setup () {
     const store = useStore()
+    const statusList = reactive([
+      {
+        type: '',
+        title: 'Все'
+      },
+      {
+        type: 'active',
+        title: 'Активные'
+      },
+      {
+        type: 'pending',
+        title: 'Выполняються'
+      },
+      {
+        type: 'cancelled',
+        title: 'Отмененные'
+      },
+      {
+        type: 'done',
+        title: 'Завершенные'
+      }
+    ])
+    const activeStatusIndex = ref(0)
 
     store.dispatch('getTasks')
-    const tasks = computed(() => store.state.tasks)
+    const tasks = computed(() => {
+      return store.getters.getFilterTasks(statusList[activeStatusIndex.value].type)
+    })
     const countActiveTask = computed(() => store.getters.getCountActiveTasks)
+
+    function filterTasks (idx) {
+      activeStatusIndex.value = idx
+    }
 
     return {
       tasks,
-      countActiveTask
+      countActiveTask,
+      activeStatusIndex,
+      statusList,
+      filterTasks
     }
   },
 
